@@ -2,7 +2,6 @@ package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val purple200 = Color(0xFFBB86FC)
-val purple500 = Color(0xFF6200EE)
-val purple700 = Color(0xFF3700B3)
-val teal200 = Color(0xFF03DAC5)
+val primary = Color(0xFFFF0000)
+val primaryVariantDark = Color(0xFF810000)
+val secondaryDark = Color(0xFF4CAF50)
