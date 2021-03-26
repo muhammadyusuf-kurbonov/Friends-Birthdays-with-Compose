@@ -69,7 +69,9 @@ private fun HomeList(
 
         items(items.size) {
             HomeListItem(
-                modifier = Modifier.fillParentMaxWidth(),
+                modifier = Modifier
+                    .fillParentMaxWidth()
+                    .padding(8.dp),
                 item = items[it]
             )
         }
@@ -97,6 +99,24 @@ private fun HomeListItem(
     Divider()
 }
 
+
+@Composable
+private fun AddButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
+) {
+    FloatingActionButton(onClick = {
+        onClick()
+    }, modifier = modifier) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_baseline_add_24),
+            tint = Color.White,
+            contentDescription = "icon"
+        )
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewHomeListItem() {
@@ -119,6 +139,41 @@ fun PreviewHomeList() {
         BirthdayEntity(
             name = "Androider Test2",
             birthday = "2005-04-19"
+        ), BirthdayEntity(
+            name = "Androider",
+            birthday = "2002-05-22"
+        ),
+        BirthdayEntity(
+            name = "Androider Test2",
+            birthday = "2005-04-19"
+        ), BirthdayEntity(
+            name = "Androider",
+            birthday = "2002-05-22"
+        ),
+        BirthdayEntity(
+            name = "Androider Test2",
+            birthday = "2005-04-19"
+        ), BirthdayEntity(
+            name = "Androider",
+            birthday = "2002-05-22"
+        ),
+        BirthdayEntity(
+            name = "Androider Test2",
+            birthday = "2005-04-19"
+        ), BirthdayEntity(
+            name = "Androider",
+            birthday = "2002-05-22"
+        ),
+        BirthdayEntity(
+            name = "Androider Test2",
+            birthday = "2005-04-19"
+        ), BirthdayEntity(
+            name = "Androider",
+            birthday = "2002-05-22"
+        ),
+        BirthdayEntity(
+            name = "Androider Test2",
+            birthday = "2005-04-19"
         ),
         BirthdayEntity(
             name = "Androider Test3",
@@ -127,20 +182,4 @@ fun PreviewHomeList() {
     )
 
     HomeList(items = list, modifier = Modifier.padding(4.dp))
-}
-
-@Composable
-private fun AddButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
-) {
-    FloatingActionButton(onClick = {
-        onClick()
-    }, modifier = modifier) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_baseline_add_24),
-            tint = Color.White,
-            contentDescription = "icon"
-        )
-    }
 }

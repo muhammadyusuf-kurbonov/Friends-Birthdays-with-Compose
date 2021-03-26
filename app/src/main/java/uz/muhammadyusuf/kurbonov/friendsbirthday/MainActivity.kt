@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.google.android.material.composethemeadapter.MdcTheme
 import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.friendsbirthday.navigation.Destinations
 import uz.muhammadyusuf.kurbonov.friendsbirthday.navigation.navGraph
@@ -21,8 +22,16 @@ class MainActivity: AppCompatActivity() {
             CompositionLocalProvider(
                 LocalNavController provides navController
             ) {
-                Timber.d("${LocalNavController.current}")
-                NavHost(navController = navController, startDestination = Destinations.LAUNCHER_SCREEN, builder = navGraph)
+
+                MdcTheme {
+                    Timber.d("${LocalNavController.current}")
+                    NavHost(
+                        navController = navController,
+                        startDestination = Destinations.LAUNCHER_SCREEN,
+                        builder = navGraph
+                    )
+                }
+
             }
         }
     }
