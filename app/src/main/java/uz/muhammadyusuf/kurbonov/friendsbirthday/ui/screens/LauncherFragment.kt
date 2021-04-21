@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.fragments
+package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

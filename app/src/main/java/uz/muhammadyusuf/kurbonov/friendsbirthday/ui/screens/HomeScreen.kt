@@ -1,10 +1,13 @@
-package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.fragments
+package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,8 +22,10 @@ import uz.muhammadyusuf.kurbonov.friendsbirthday.R
 import uz.muhammadyusuf.kurbonov.friendsbirthday.initTimber
 import uz.muhammadyusuf.kurbonov.friendsbirthday.model.BirthdayEntity
 import uz.muhammadyusuf.kurbonov.friendsbirthday.navigation.Destinations
+import uz.muhammadyusuf.kurbonov.friendsbirthday.prettifyDate
 import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.core.LocalNavController
 import uz.muhammadyusuf.kurbonov.friendsbirthday.viewmodels.HomeViewModel
+import kotlin.random.Random
 
 @Composable
 fun HomeScreen(
@@ -36,64 +41,114 @@ fun HomeScreen(
 
     val navController = LocalNavController.current
 
-    Box(modifier = modifier.fillMaxSize()) {
-
-        HomeList(items = items.value)
-
-        AddButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            navController.navigate(Destinations.ADD_SCREEN)
+    Scaffold(modifier = modifier.fillMaxSize(),
+        floatingActionButton = {
+            AddButton {
+                navController.navigate(Destinations.ADD_SCREEN)
+            }
+        }, topBar = {
+            TopAppBar(title = {
+                Text(
+                    text = "Birthdays",
+                    modifier = Modifier.padding(4.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.subtitle1
+                )
+            })
         }
-
+    ) {
+        HomeList(items = items.value)
     }
 }
 
 // Components of home screen
+
 @Composable
 private fun HomeList(
     modifier: Modifier = Modifier,
     items: List<BirthdayEntity>
 ) {
-    LazyColumn(content = {
-        item {
-            Text(
-                text = "Birthdays",
-                modifier = Modifier.padding(4.dp),
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.subtitle1
-            )
-        }
+    Column(modifier = modifier) {
+        LazyColumn(content = {
+            items(items.size) {
+                HomeListItem(
+                    modifier = Modifier
+                        .fillParentMaxWidth()
+                        .padding(8.dp),
+                    item = items[it]
+                )
+            }
+        })
+    }
 
-        items(items.size) {
-            HomeListItem(
-                modifier = Modifier
-                    .fillParentMaxWidth()
-                    .padding(8.dp),
-                item = items[it]
-            )
-        }
-    }, modifier = modifier)
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun HomeListItem(
     modifier: Modifier = Modifier,
     item: BirthdayEntity
 ) {
-    Column(modifier = modifier) {
-        Row(modifier = Modifier.padding(4.dp)) {
-            Text(
-                text = item.name,
-                modifier = Modifier.weight(1.0f),
-                style = MaterialTheme.typography.body1
-            )
-            Text(
-                text = item.birthday,
-                style = MaterialTheme.typography.body2
-            )
+    val color = remember {
+        arrayOf(
+            Color.Blue,
+            Color.Red,
+            Color.Green,
+            Color.DarkGray
+        )[Random.nextInt(0, 4)]
+    }
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+    Card(
+        modifier = modifier.apply {
+            if (expanded)
+                fillMaxHeight()
+        },
+        backgroundColor = color,
+        contentColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .apply {
+                    if (expanded)
+                        fillMaxSize()
+                }
+                .padding(4.dp)
+                .clickable { expanded = !expanded },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                var name = item.name
+
+                if (item.isBirthdayToday())
+                    name = "🎉\uD83C\uDF89\uD83C\uDF89 $name \uD83C\uDF89\uD83C\uDF89\uD83C\uDF89"
+
+                Text(
+                    text = name,
+                    modifier = Modifier
+                        .padding(4.dp),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.h5
+                )
+                AnimatedVisibility(visible = expanded) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = item.birthday.prettifyDate(),
+                            style = MaterialTheme.typography.body2
+                        )
+                        Text(
+                            text = item.phone
+                        )
+                    }
+                }
+            }
         }
     }
     Divider()

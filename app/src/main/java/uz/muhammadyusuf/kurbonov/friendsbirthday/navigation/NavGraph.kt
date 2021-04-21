@@ -2,9 +2,9 @@ package uz.muhammadyusuf.kurbonov.friendsbirthday.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.fragments.AddScreen
-import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.fragments.HomeScreen
-import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.fragments.LauncherScreen
+import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens.AddScreen
+import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens.HomeScreen
+import uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens.LauncherScreen
 
 val navGraph: NavGraphBuilder.() -> Unit = {
     composable(Destinations.HOME_SCREEN){

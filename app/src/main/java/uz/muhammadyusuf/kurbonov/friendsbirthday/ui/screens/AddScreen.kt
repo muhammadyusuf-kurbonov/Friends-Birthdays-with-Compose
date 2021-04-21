@@ -1,4 +1,4 @@
-package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.fragments
+package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -8,10 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
@@ -23,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.compose.navigate
 import io.michaelrocks.libphonenumber.android.PhoneNumberUtil
 import kotlinx.coroutines.launch
@@ -43,22 +41,27 @@ fun AddScreen(
     modifier: Modifier = Modifier
 ) {
     val navController = LocalNavController.current
+    val context = LocalContext.current
 
-    val nameTextState = remember {
+    // states
+
+    var nameTextState by remember {
         mutableStateOf("")
     }
 
-    val birthday = remember {
+    var birthday by remember {
         mutableStateOf(System.currentTimeMillis())
     }
 
-    val phoneState = remember {
+    var phoneState by remember {
         mutableStateOf(TextFieldValue("+998", TextRange(4)))
     }
 
     val scrollState = rememberScrollState()
 
-    // Edn states
+    val scope = rememberCoroutineScope()
+    val instance = PhoneNumberUtil.createInstance(context)
+    // End states
 
     Column(modifier = modifier.verticalScroll(scrollState)) {
         Text(
@@ -78,31 +81,28 @@ fun AddScreen(
             "Cake"
         )
         val items = listOf.filter {
-            it.contains(nameTextState.value, true)
+            it.contains(nameTextState, true)
         }
 
         AutocompleteTextInput(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(4.dp),
-            text = nameTextState.value,
+            text = nameTextState,
             hint = "Name",
             icon = R.drawable.ic_baseline_person_24,
-            onValueChange = { nameTextState.value = it },
+            onValueChange = { nameTextState = it },
             items = items
         )
-        val context = LocalContext.current
-        val scope = rememberCoroutineScope()
 
-        val instance = PhoneNumberUtil.createInstance(context)
         val currentNumber = try {
             instance.format(
-                instance.parse(phoneState.value.text, Locale.getDefault().country),
+                instance.parse(phoneState.text, Locale.getDefault().country),
                 PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL
             )
         } catch (e: Exception) {
             Timber.e(e)
-            phoneState.value.text
+            phoneState.text
         }
         OutlinedTextField(
             modifier = Modifier
@@ -119,7 +119,7 @@ fun AddScreen(
             value = TextFieldValue(currentNumber, TextRange(currentNumber.length)),
             onValueChange = {
                 val replace = it.text.replace("() ", "")
-                phoneState.value = TextFieldValue(replace, TextRange(it.text.length))
+                phoneState = TextFieldValue(replace, TextRange(it.text.length))
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
             label = { Text(text = "Phone") }
@@ -132,7 +132,7 @@ fun AddScreen(
                 .onFocusChanged {
                     if (it == FocusState.Active)
                         scope.launch {
-                            birthday.value = openDatePickerDialog(context)
+                            birthday = openDatePickerDialog(context)
                         }
                 },
             leadingIcon = {
@@ -142,7 +142,7 @@ fun AddScreen(
                     contentDescription = "Date"
                 )
             },
-            value = birthday.value.prettyDate(),
+            value = birthday.prettyDate(),
             onValueChange = {},
             label = { Text(text = "Birthday") },
             readOnly = true
@@ -151,9 +151,9 @@ fun AddScreen(
         Button(onClick = { scope.launch {
             AppDatabase.getInstance(context).getDatabaseController().insertEntity(
                 BirthdayEntity(
-                    name = nameTextState.value,
-                    phone = phoneState.value.text.replace("()- ", ""),
-                    birthday = birthday.value.formatAsDate("YYYY-mm-dd")
+                    name = nameTextState,
+                    phone = phoneState.text.replace("()- ", ""),
+                    birthday = birthday.formatAsDate("YYYY-MM-dd")
                 )
             )
             navController.navigate(Destinations.HOME_SCREEN)
@@ -205,11 +205,14 @@ fun AutocompleteTextInput(
             if (hint.isNotEmpty())
                 Text(text = hint)
         })
+
     DropdownMenu(
         expanded = dropdownShowState.value,
         onDismissRequest = {
             dropdownShowState.value = false
-        }) {
+        },
+        properties = PopupProperties()
+    ) {
         items.forEach {
             DropdownMenuItem(onClick = {
                 onValueChange(it)

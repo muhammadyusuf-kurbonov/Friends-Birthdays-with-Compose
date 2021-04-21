@@ -42,7 +42,7 @@ fun String.reformatDate(
     return result
 }
 
-fun String.prettifyDate() = reformatDate("yyyy-MM-DD", "dd MMM YYYY")
+fun String.prettifyDate() = reformatDate("yyyy-MM-dd", "dd MMM yyyy")
 
 suspend fun openDatePickerDialog(context: Context) = suspendCoroutine<Long> {
     var date = System.currentTimeMillis()
