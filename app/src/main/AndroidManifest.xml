@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="uz.muhammadyusuf.kurbonov.friendsbirthday">
 
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -22,6 +23,7 @@
             </intent-filter>
         </activity>
     </application>
+
 
     <queries>
         <package android:name="com.vivo.permissionmanager" />

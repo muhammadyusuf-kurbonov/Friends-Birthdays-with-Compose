@@ -2,6 +2,7 @@ package uz.muhammadyusuf.kurbonov.friendsbirthday.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.navigate
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import uz.muhammadyusuf.kurbonov.friendsbirthday.R
 import uz.muhammadyusuf.kurbonov.friendsbirthday.initTimber
 import uz.muhammadyusuf.kurbonov.friendsbirthday.model.BirthdayEntity
@@ -50,7 +53,7 @@ fun HomeScreen(
             TopAppBar(title = {
                 Text(
                     text = "Birthdays",
-                    modifier = Modifier.padding(4.dp),
+                    modifier = Modifier.padding(4.dp, 0.dp),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.subtitle1
                 )
@@ -69,13 +72,17 @@ private fun HomeList(
     items: List<BirthdayEntity>
 ) {
     Column(modifier = modifier) {
+        val model = viewModel<HomeViewModel>()
         LazyColumn(content = {
-            items(items.size) {
+            items(items.size) { index ->
                 HomeListItem(
                     modifier = Modifier
                         .fillParentMaxWidth()
                         .padding(8.dp),
-                    item = items[it]
+                    item = items[index],
+                    onSwipedOut = {
+                        model.delete(it)
+                    }
                 )
             }
         })
@@ -83,11 +90,12 @@ private fun HomeList(
 
 }
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
 private fun HomeListItem(
     modifier: Modifier = Modifier,
-    item: BirthdayEntity
+    item: BirthdayEntity,
+    onSwipedOut: (BirthdayEntity) -> Unit = {}
 ) {
     val color = remember {
         arrayOf(
@@ -100,52 +108,78 @@ private fun HomeListItem(
     var expanded by remember {
         mutableStateOf(false)
     }
-    Card(
-        modifier = modifier.apply {
-            if (expanded)
-                fillMaxHeight()
-        },
-        backgroundColor = color,
-        contentColor = Color.White,
-        shape = RoundedCornerShape(16.dp)
-    ) {
 
+    val dismissState = rememberDismissState()
+
+    if (dismissState.isDismissed(DismissDirection.EndToStart)
+        or
+        dismissState.isDismissed(DismissDirection.StartToEnd)
+    ) {
+        onSwipedOut(item)
+        Timber.tag("HomeScreen").d("Swiped out $item to ${dismissState.dismissDirection}")
+        val rememberCoroutineScope = rememberCoroutineScope()
+        LaunchedEffect(key1 = item) {
+            rememberCoroutineScope.launch { dismissState.snapTo(DismissValue.Default) }
+        }
+    }
+    SwipeToDismiss(state = dismissState, background = {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier
+                .fillMaxSize()
+                .background(Color.Red)
+        ) {
+
+        }
+    }) {
+        Card(
+            modifier = modifier
                 .apply {
                     if (expanded)
-                        fillMaxSize()
-                }
-                .padding(4.dp)
-                .clickable { expanded = !expanded },
-            contentAlignment = Alignment.Center
+                        fillMaxHeight()
+                },
+            backgroundColor = color,
+            contentColor = Color.White,
+            shape = RoundedCornerShape(16.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                var name = item.name
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .apply {
+                        if (expanded)
+                            fillMaxSize()
+                    }
+                    .padding(4.dp)
+                    .clickable { expanded = !expanded },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                if (item.isBirthdayToday())
-                    name = "🎉\uD83C\uDF89\uD83C\uDF89 $name \uD83C\uDF89\uD83C\uDF89\uD83C\uDF89"
+                    var name = item.name
 
-                Text(
-                    text = name,
-                    modifier = Modifier
-                        .padding(4.dp),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.h5
-                )
-                AnimatedVisibility(visible = expanded) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = item.birthday.prettifyDate(),
-                            style = MaterialTheme.typography.body2
-                        )
-                        Text(
-                            text = item.phone
-                        )
+                    if (item.isBirthdayToday())
+                        name =
+                            "🎉\uD83C\uDF89\uD83C\uDF89 $name \uD83C\uDF89\uD83C\uDF89\uD83C\uDF89"
+
+                    Text(
+                        text = name,
+                        modifier = Modifier
+                            .padding(4.dp),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.h5
+                    )
+                    AnimatedVisibility(visible = expanded) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = item.birthday.prettifyDate(),
+                                style = MaterialTheme.typography.body2
+                            )
+                            Text(
+                                text = item.phone
+                            )
+                        }
                     }
                 }
             }
